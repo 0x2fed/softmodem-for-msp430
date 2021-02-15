@@ -10,9 +10,9 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef __MSP430__
-#include <legacymsp430.h>
+//#include <legacymsp430.h>
 #endif
-#include  "msp430x14x.h"               // MSP430 specific header file
+#include <msp430.h>                    // MSP430 specific header file #include  "msp430x14x.h"
 #include  "softmodem.h"                // header for Soft-Modem Demo
 #include  "v_21.h"                     // header for V.21 Datapump
 
@@ -54,10 +54,6 @@ int main(void)
             uSTATUS &= ~(WelcomeMessage + CHAR_RCVD); // reset status bits when no connection is available
         }
     }
-
-#ifdef __MSP430__
-    return 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------------
@@ -187,8 +183,20 @@ void TriggerADC12(void)
 __interrupt void ADC12ISR(void)
 #endif
 #ifdef __MSP430__
-interrupt(ADC_VECTOR) ADC12ISR(void)
+// interrupt(ADC_VECTOR) ADC12ISR(void)
 #endif
+
+// ADC12 interrupt service routine
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
+#pragma vector=ADC12_VECTOR
+__interrupt void ADC12_ISR (void)
+#elif defined(__GNUC__)
+void __attribute__ ((interrupt(ADC12_VECTOR))) ADC12_ISR (void)
+#else
+#error Compiler not supported!
+#endif
+
+
 {
     ADCresult = (ADC12MEM0 - 2692);           // calculation of temperature(1/10 deg C)
     uSTATUS |= ADC_vAVIAL;                    // set status bit that ADC result is available

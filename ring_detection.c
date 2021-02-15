@@ -9,9 +9,9 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 #ifdef __MSP430__
-#include <legacymsp430.h>
+//#include <legacymsp430.h>
 #endif
-#include  "msp430x14x.h"               // MSP430 specific header file
+#include <msp430.h>               // MSP430 specific header file #include  "msp430x14x.h"
 #include  "v_21.h"
 #include  "ring_detection.h"
 
@@ -99,12 +99,13 @@ void go_on_hook(void)
 //////////////////////////////////////////////////////////////////////////////////////////
 // INTERRUPT SERVICE ROUTINE : P 1 _ I S R
 // function  : count ring impulses
-#ifdef __ICC430__
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector=PORT2_VECTOR
-__interrupt void P2_ISR(void)
-#endif
-#ifdef __MSP430__
-interrupt(PORT2_VECTOR) P2_ISR(void)
+__interrupt void P2_ISR (void)
+#elif defined(__GNUC__)
+void __attribute__ ((interrupt(PORT2_VECTOR))) P2_ISR (void)
+#else
+#error Compiler not supported!
 #endif
 {
     if (P2IFG & RING) {
@@ -131,12 +132,13 @@ interrupt(PORT2_VECTOR) P2_ISR(void)
 // INTERRUPT SERVICE ROUTINE : w a t c h d o g _ t i m e r
 // function  : RingDetection, verify ring impulses as valid ring signal
 //             by providing the needed time base for the detection algorithm
-#ifdef __ICC430__
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
 #pragma vector=WDT_VECTOR
-__interrupt void watchdog_timer(void)
-#endif
-#ifdef __MSP430__
-interrupt(WDT_VECTOR) watchdog_timer(void)
+__interrupt void watchdog_timer (void)
+#elif defined(__GNUC__)
+void __attribute__ ((interrupt(WDT_VECTOR))) watchdog_timer (void)
+#else
+#error Compiler not supported!
 #endif
 {
     wdt_cntr++;
